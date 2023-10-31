@@ -1,20 +1,15 @@
 import db from '../../server/firebase'
-import { collection, addDoc, query, onSnapshot } from "firebase/firestore";
-import { useState, useEffect } from 'react'
+import { collection, addDoc, query, onSnapshot, deleteDoc, getDocs } from "firebase/firestore";
+import { useState } from 'react'
 import { CocktailCard, Container } from './CocktailsStyles';
+import { Oval } from 'react-loader-spinner'
 
 
 type cocktailType = { id: string, name: any, ingredients: [], glass: [], method: [], ice: [], garnish:[] }
 
 const Cocktails = () => {
-    const [name, setName] = useState<string>('')
-    const [ingredients, setIngredients] = useState<string[]>([]);
-    const [glass, setGlass] = useState<string[]>([]);
-    const [method, setMethod] = useState<string[]>([]);
-    const [ice, setIce] = useState<string[]>([]);
-    const [garnish, setGarnish] = useState<string[]>([]);
     const [cocktails, setCocktails] = useState<cocktailType[]>([]);
-
+    const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAllChecked, setIsAllChecked] = useState(false);
 
@@ -38,37 +33,6 @@ const Cocktails = () => {
 
 
     const handleFetchCocktails = async () => {
-        const q = query(collection(db, "cocktails"));
-        const unSubscribe = onSnapshot(q, (querySnapshot) => {
-            const cocktails: cocktailType[] = [];
-            querySnapshot.forEach((doc) => {
-                cocktails.push({ id: doc.id, name: doc.data().name, ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish });
-            });
-            setCocktails(cocktails);
-        });
-        return unSubscribe;
-    }
-
-    useEffect(() => {
-        handleFetchCocktails();
-    }, [])
-
-
-    /*const resetAllData = async () => {
-        const q = query(collection(db, "cocktails"));
-        const unSubscribe = onSnapshot(q, (querySnapshot) => {
-            querySnapshot.forEach(async (doc) => {
-                await deleteDoc(doc.ref);
-            });
-        });
-        return unSubscribe;
-    }*/
-
-    
-    
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
         data.map(async cocktail => {
             const dataName = cocktail.name;
             const dataIngredients = cocktail.ingredients;
@@ -76,88 +40,60 @@ const Cocktails = () => {
             const dataMethod = [cocktail.method];
             const dataIce = [cocktail.ice];
             const dataGarnish = [cocktail.garnish];
-            if (name.trim() !== '' && ingredients.length !== 0 && glass.length !== 0 && method.length !== 0 && ice.length !== 0 && garnish.length !== 0) {
-                /*const formattedIngredients = ingredients.flatMap(ingredient => ingredient.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedGlass = glass.flatMap(glassItem => glassItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedMethod = method.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedIce = ice.flatMap(iceItem => iceItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedGarnish = garnish.flatMap(garnishItem => garnishItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));*/
-                const formattedDataName = dataName.trim().toLowerCase();
-                const formattedDataIngredients = dataIngredients.flatMap(ingredient => ingredient.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedDataGlass = dataGlass.flatMap(glassItem => glassItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedDataMethod = dataMethod.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedDataIce = dataIce.flatMap(iceItem => iceItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                const formattedDataGarnish = dataGarnish.flatMap(garnishItem => garnishItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
-                await addDoc(collection(db, "cocktails"), {
-                    name: formattedDataName,
-                    ingredients: formattedDataIngredients,
-                    glass: formattedDataGlass,
-                    method: formattedDataMethod,
-                    ice: formattedDataIce,
-                    garnish: formattedDataGarnish
-                });
-                setName('')
-                setIngredients([])
-                setGlass([])
-                setMethod([])
-                setIce([])
-                setGarnish([])
-
-                handleFetchCocktails();
-            }
+            console.log('added')
+            /*const formattedIngredients = ingredients.flatMap(ingredient => ingredient.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedGlass = glass.flatMap(glassItem => glassItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedMethod = method.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedIce = ice.flatMap(iceItem => iceItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedGarnish = garnish.flatMap(garnishItem => garnishItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));*/
+            const formattedDataName = dataName.trim().toLowerCase();
+            const formattedDataIngredients = dataIngredients.flatMap(ingredient => ingredient.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedDataGlass = dataGlass.flatMap(glassItem => glassItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedDataMethod = dataMethod.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedDataIce = dataIce.flatMap(iceItem => iceItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            const formattedDataGarnish = dataGarnish.flatMap(garnishItem => garnishItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+            await addDoc(collection(db, "cocktails"), {
+                name: formattedDataName,
+                ingredients: formattedDataIngredients,
+                glass: formattedDataGlass,
+                method: formattedDataMethod,
+                ice: formattedDataIce,
+                garnish: formattedDataGarnish
+            });
+            setIsLoading(false);
         })
+
+
+        const q = query(collection(db, "cocktails"));
+        const unSubscribe = onSnapshot(q, (querySnapshot) => {
+            const cocktails: cocktailType[] = [];
+            querySnapshot.forEach((doc) => {
+                console.log(doc.data().name)
+                cocktails.push({ id: doc.id, name: doc.data().name, ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish });
+            });
+            setCocktails(cocktails);
+        });
+        return unSubscribe;
     }
+
+    const resetAllData = async () => {
+        setCocktails([]);
+        setIsLoading(true);
+        const q = query(collection(db, "cocktails"));
+        const querySnapshot = await getDocs(q);
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+        handleFetchCocktails();
+    };
+
+    
+
 
   return (
     <Container>
-        <form className="mb-5" onSubmit={handleSubmit}>
-            <input 
-                type="text"
-                placeholder='Name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
-
-            <input 
-                type="text"
-                placeholder='Ingredients'
-                value={ingredients}
-                onChange={(e) => setIngredients([e.target.value])}
-            />
-
-            <input 
-                type="text"
-                placeholder='Glass'
-                value={glass}
-                onChange={(e) => setGlass([e.target.value])}
-            />
-
-            <input 
-                type="text"
-                placeholder='Method'
-                value={method}
-                onChange={(e) => setMethod([e.target.value])}
-            />
-
-            <input 
-                type="text"
-                placeholder='Ice'
-                value={ice}
-                onChange={(e) => setIce([e.target.value])}
-            />
-
-            <input 
-                type="text"
-                placeholder='Garnish'
-                value={garnish}
-                onChange={(e) => setGarnish([e.target.value])}
-            />
-            
-            <button>Submit</button>
-        </form>
-
         <div>
             Number of cocktails: {cocktails.length}
+            <button onClick={resetAllData}>Reset all data</button>
         </div>
         
         <input
@@ -188,6 +124,20 @@ const Cocktails = () => {
         </CocktailCard>
       ))}
 
+
+    {isLoading &&<Oval
+    height={50}
+    width={50}
+    color="#333"
+    wrapperStyle={{}}
+    wrapperClass=""
+    visible={true}
+    ariaLabel='oval-loading'
+    secondaryColor="#333333"
+    strokeWidth={1}
+    strokeWidthSecondary={1}
+
+    />}
     </Container>
   )
 }
