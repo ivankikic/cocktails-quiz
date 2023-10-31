@@ -1,17 +1,23 @@
 import db from '../../server/firebase'
-import { collection, addDoc, query, onSnapshot, deleteDoc, getDocs } from "firebase/firestore";
-import { useState } from 'react'
-import { CocktailCard, Container } from './CocktailsStyles';
+import { collection, addDoc, query, onSnapshot, deleteDoc, getDocs, updateDoc, doc, getDoc } from "firebase/firestore";
+import { useState, useEffect } from 'react'
+import { CocktailCard, CocktailCardHeader, CocktailFilterFavourite, CocktailFilterFavouriteNot, CocktailFilters, CocktailGrid, CocktailSort, Container, ContainerHeader, ContainerHeaderLeft, ContainerHeaderRight, ContainerSubHeader } from './CocktailsStyles';
 import { Oval } from 'react-loader-spinner'
+import { Button } from 'react-bootstrap';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-
-type cocktailType = { id: string, name: any, ingredients: [], glass: [], method: [], ice: [], garnish:[] }
+type cocktailType = { id: string, name: any, ingredients: [], glass: [], method: [], ice: [], garnish:[], favourite?: boolean }
 
 const Cocktails = () => {
     const [cocktails, setCocktails] = useState<cocktailType[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAllChecked, setIsAllChecked] = useState(false);
+    const [sortedCocktails, setSortedCocktails] = useState<cocktailType[]>([]);
+    const [sortDirection, setSortDirection] = useState('asc' as 'asc' | 'desc');
+    const [filterFavorites, setFilterFavorites] = useState(false);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -21,7 +27,7 @@ const Cocktails = () => {
         setIsAllChecked(event.target.checked);
       };
     
-      const filteredCocktails = cocktails.filter(cocktail => {
+      const filteredCocktails = sortedCocktails.filter(cocktail => {
         if (isAllChecked) {
           return Object.values(cocktail).some(value =>
             value.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -29,8 +35,103 @@ const Cocktails = () => {
         } else {
           return cocktail.name.toLowerCase().includes(searchTerm.toLowerCase());
         }
-      });
+    });
 
+    const filterFavouriteCocktails = () => {
+        if(filterFavorites) {
+            const filteredCocktails = [...sortedCocktails].filter(cocktail => cocktail.favourite === true);
+            setSortedCocktails(filteredCocktails);
+        } else {
+            sortCocktails();
+        }
+    }
+
+    const randomOrder = () => {
+        setFilterFavorites(false);
+        const randomCocktails = [...cocktails].sort(() => Math.random() - 0.5);
+        setSortedCocktails(randomCocktails);
+    }
+
+    useEffect(() => {
+        filterFavouriteCocktails();
+    }, [filterFavorites])
+
+    const handleFilterFavourites = () => {
+        setFilterFavorites(!filterFavorites);
+    }
+
+    const sortCocktails = () => {
+        setFilterFavorites(false);
+        const sortedCocktails = [...cocktails].sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return sortDirection === 'asc' ? -1 : 1;
+            }
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return sortDirection === 'asc' ? 1 : -1;
+            }
+            return 0;
+            });
+        setSortedCocktails(sortedCocktails);
+    }
+
+    useEffect(() => {
+        sortCocktails();
+    }, [sortDirection])
+
+
+    const handleFavourite = async (cocktail: cocktailType) => {
+        const cocktailRef = doc(db, "cocktails", cocktail.id);
+        
+        const cocktailDoc = await getDoc(cocktailRef);
+        if (cocktailDoc.exists()) {
+          const currentFavourite = cocktailDoc.data().favourite;
+          await updateDoc(cocktailRef, {
+            favourite: !currentFavourite
+          });
+        } else {
+          console.log("No such document!");
+        }
+
+        const updatedCocktails = cocktails.map((item) => {
+            if (item.id === cocktail.id) {
+              return {
+                ...item,
+                favourite: !item.favourite
+              };
+            }
+            return item;
+          });
+          setCocktails(updatedCocktails);
+      };
+
+    useEffect(() => {
+        setIsLoading(true);
+        handleSetCoctails();
+    }, [])
+
+    useEffect(() => {
+        sortCocktails();
+    }, [cocktails])
+    
+    
+    const handleSetCoctails = () => {
+        setCocktails([]);
+        const q = query(collection(db, "cocktails"));
+        const unSubscribe = onSnapshot(q, (querySnapshot) => {
+            const cocktails: cocktailType[] = [];
+            querySnapshot.forEach((doc) => {
+                cocktails.push({ id: doc.id, name: doc.data().name, ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish , favourite: doc.data().favourite});
+            });
+            setCocktails(cocktails);
+        });
+        setIsLoading(false);
+        return unSubscribe;
+    }
+
+    const rotateArrow = () => {
+        const arrow = document.querySelector('.MuiSvgIcon-root');
+        arrow?.classList.toggle('rotate');
+    }
 
     const handleFetchCocktails = async () => {
         data.map(async cocktail => {
@@ -40,7 +141,6 @@ const Cocktails = () => {
             const dataMethod = [cocktail.method];
             const dataIce = [cocktail.ice];
             const dataGarnish = [cocktail.garnish];
-            console.log('added')
             /*const formattedIngredients = ingredients.flatMap(ingredient => ingredient.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
             const formattedGlass = glass.flatMap(glassItem => glassItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
             const formattedMethod = method.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
@@ -52,38 +152,33 @@ const Cocktails = () => {
             const formattedDataMethod = dataMethod.flatMap(methodItem => methodItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
             const formattedDataIce = dataIce.flatMap(iceItem => iceItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
             const formattedDataGarnish = dataGarnish.flatMap(garnishItem => garnishItem.split(/[\/,]|\sor\s/).map(item => item.trim().toLowerCase()));
+
             await addDoc(collection(db, "cocktails"), {
                 name: formattedDataName,
                 ingredients: formattedDataIngredients,
                 glass: formattedDataGlass,
                 method: formattedDataMethod,
                 ice: formattedDataIce,
-                garnish: formattedDataGarnish
+                garnish: formattedDataGarnish,
+                favourite: false
             });
-            setIsLoading(false);
+            
         })
-
-
-        const q = query(collection(db, "cocktails"));
-        const unSubscribe = onSnapshot(q, (querySnapshot) => {
-            const cocktails: cocktailType[] = [];
-            querySnapshot.forEach((doc) => {
-                console.log(doc.data().name)
-                cocktails.push({ id: doc.id, name: doc.data().name, ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish });
-            });
-            setCocktails(cocktails);
-        });
-        return unSubscribe;
+        handleSetCoctails();
     }
 
     const resetAllData = async () => {
-        setCocktails([]);
-        setIsLoading(true);
-        const q = query(collection(db, "cocktails"));
-        const querySnapshot = await getDocs(q);
-        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(deletePromises);
-        handleFetchCocktails();
+        if(confirm('Are you sure you want to reset all data?') == true) {
+            setCocktails([]);
+            setIsLoading(true);
+            const q = query(collection(db, "cocktails"));
+            const querySnapshot = await getDocs(q);
+            const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+            handleFetchCocktails();
+        } else {
+            return;
+        }
     };
 
     
@@ -91,53 +186,79 @@ const Cocktails = () => {
 
   return (
     <Container>
-        <div>
-            Number of cocktails: {cocktails.length}
-            <button onClick={resetAllData}>Reset all data</button>
-        </div>
+        <ContainerHeader>
+            <ContainerHeaderLeft>
+                <h2>All Cocktails</h2>
+            </ContainerHeaderLeft>
+            <ContainerHeaderRight>
+                <h4>Number of cocktails: {cocktails.length}</h4>
+                <Button variant='danger' onClick={resetAllData}>Reset all data</Button>
+            </ContainerHeaderRight>
+        </ContainerHeader>
         
+        <ContainerSubHeader>
         <input
-        type="text"
-        placeholder="Search"
-        value={searchTerm}
-        onChange={handleSearchChange}
-      />
-      <label>
-        <input
-          type="checkbox"
-          checked={isAllChecked}
-          onChange={handleCheckboxChange}
+            type="text"
+            placeholder="Search"
+            value={searchTerm}
+            onChange={handleSearchChange}
         />
-        All
-      </label>
+        <label>
+            <input
+                className='checkbox'
+                type="checkbox"
+                checked={isAllChecked}
+                onChange={handleCheckboxChange}
+            />
+            All
+        </label>
+        </ContainerSubHeader>
 
-      {/* ... other JSX elements */}
-
-      {filteredCocktails.map(cocktail => (
-        <CocktailCard>
-          <h3><b>{cocktail.name}</b></h3>
-                <p><b>Ingredients:</b> {cocktail.ingredients.join(', ')}</p>
-                <p><b>Glass:</b> {cocktail.glass.join(', ')}</p>
-                <p><b>Method:</b> {cocktail.method.join(', ')}</p>
-                <p><b>Ice:</b> {cocktail.ice.join(', ')}</p>
-                <p><b>Garnish:</b> {cocktail.garnish.join(', ')}</p>
-        </CocktailCard>
-      ))}
+        <CocktailFilters>
+            {filterFavorites ? <CocktailFilterFavourite onClick={handleFilterFavourites}>Favourites</CocktailFilterFavourite> : <CocktailFilterFavouriteNot onClick={handleFilterFavourites}>Favourites</CocktailFilterFavouriteNot> }
+            <CocktailSort onClick={() => {setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); rotateArrow()}}>
+                <p>Sort</p>
+                <ArrowDownwardIcon />
+            </CocktailSort>
+            <CocktailSort onClick={randomOrder}>
+                <p>Random</p>
+            </CocktailSort>
+        </CocktailFilters>
 
 
-    {isLoading &&<Oval
-    height={50}
-    width={50}
-    color="#333"
-    wrapperStyle={{}}
-    wrapperClass=""
-    visible={true}
-    ariaLabel='oval-loading'
-    secondaryColor="#333333"
-    strokeWidth={1}
-    strokeWidthSecondary={1}
+      <CocktailGrid>
+        {filteredCocktails.map(cocktail => (
+            <CocktailCard key={cocktail.id}>
+            <CocktailCardHeader>
+            <h3><b>{cocktail.name}</b></h3>
+            <div className="favourite" onClick={() => handleFavourite(cocktail)}>
+                {cocktail.favourite ? <StarIcon /> : <StarBorderIcon />}
+            </div>
+            </CocktailCardHeader>
+                    <p><b>Ingredients:</b> {cocktail.ingredients.join(', ')}</p>
+                    <p><b>Glass:</b> {cocktail.glass.join(', ')}</p>
+                    <p><b>Method:</b> {cocktail.method.join(', ')}</p>
+                    <p><b>Ice:</b> {cocktail.ice.join(', ')}</p>
+                    <p><b>Garnish:</b> {cocktail.garnish.join(', ')}</p>
+            </CocktailCard>
+        ))}
+      </CocktailGrid>
 
-    />}
+
+    <div className="loader">
+        {isLoading && <Oval
+            height={50}
+            width={50}
+            color="#333"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+            ariaLabel='oval-loading'
+            secondaryColor="#333333"
+            strokeWidth={1}
+            strokeWidthSecondary={1}
+        />}
+    </div>
     </Container>
   )
 }
