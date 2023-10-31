@@ -1,5 +1,5 @@
 import db from '../../server/firebase'
-import { collection, addDoc, query, onSnapshot, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot } from "firebase/firestore";
 import { useState, useEffect } from 'react'
 import { CocktailCard, Container } from './CocktailsStyles';
 
@@ -54,7 +54,7 @@ const Cocktails = () => {
     }, [])
 
 
-    const resetAllData = async () => {
+    /*const resetAllData = async () => {
         const q = query(collection(db, "cocktails"));
         const unSubscribe = onSnapshot(q, (querySnapshot) => {
             querySnapshot.forEach(async (doc) => {
@@ -62,7 +62,7 @@ const Cocktails = () => {
             });
         });
         return unSubscribe;
-    }
+    }*/
 
     
     
