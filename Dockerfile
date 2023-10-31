@@ -5,7 +5,7 @@ FROM node:18
 WORKDIR /app
 
 # Copy the package.json and yarn.lock files
-COPY package*.json yarn.lock ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install --silent
