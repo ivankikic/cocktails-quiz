@@ -8,16 +8,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --silent
+RUN yarn install --silent
 
 # Copy the entire application code to the container
 COPY . .
 
 # Build the production version of the app using Vite
-RUN npm build
+RUN yarn build
 
 # Install serve package globally to run the production build
-RUN npm global add serve
+RUN yarn global add serve
 
 # Expose the port used by the app
 EXPOSE 5000
