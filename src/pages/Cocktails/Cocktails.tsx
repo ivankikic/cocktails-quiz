@@ -819,5 +819,53 @@ const data = [
         "method": "Shake, Strain",
         "ice": "Crushed",
         "garnish": "Pineapple Wedge / Pineapple Leaf"
+      },
+      {
+        "name": "Negroni Sbagliato",
+        "ingredients": [
+          "30ml Sweet Vermouth",
+          "30ml Campari",
+          "30ml Prosecco"
+        ],
+        "glass": "Tumbler / short highball (prefferably chilled)",
+        "method": "Build",
+        "ice": "Cubed",
+        "garnish": "Orange slice / orange wedge"
+      },
+      {
+        "name": "Greek Mojito",
+        "ingredients": [
+          "50ml Metaxa 5",
+          "20ml Fresh Lime juice",
+          "15ml Simple Syrup",
+          "8-10 Fresh Mint Leaves",
+          "30ml Soda"
+        ],
+        "glass": "Highball",
+        "method": "Build",
+        "ice": "Cubed",
+        "garnish": "Fresh Mint Sprig"
+      },
+      {
+        "name": "Horse's Neck",
+        "ingredients": [
+          "50ml Bourbon",
+          "100ml Ginger Ale",
+        ],
+        "glass": "Highball",
+        "method": "Build",
+        "ice": "Cubed",
+        "garnish": "Long Full Lemon Peel"
+      }, 
+      {
+        "name": "Godfather",
+        "ingredients": [
+          "40ml Scotch Whisky",
+          "20ml Amaretto",
+        ],
+        "glass": "Tumbler",
+        "method": "Build",
+        "ice": "Cubed",
+        "garnish": "No"
       }
     ]
