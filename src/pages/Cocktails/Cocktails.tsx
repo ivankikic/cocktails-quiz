@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import { CocktailCard, CocktailCardHeader, CocktailFilterFavourite, CocktailFilterFavouriteNot, CocktailFilters, CocktailGrid, CocktailSort, Container, ContainerHeader, ContainerHeaderLeft, ContainerHeaderRight, ContainerSubHeader } from './CocktailsStyles';
 import { Oval } from 'react-loader-spinner'
 import { Button } from 'react-bootstrap';
-import {Star} from '@mui/icons-material';
-import {StarBorder} from '@mui/icons-material';
-import {ArrowDownward} from '@mui/icons-material';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 type cocktailType = { id: string, name: any, ingredients: [], glass: [], method: [], ice: [], garnish:[], favourite?: boolean }
 
@@ -47,7 +47,6 @@ const Cocktails = () => {
     }
 
     const randomOrder = () => {
-        setFilterFavorites(false);
         const randomCocktails = [...cocktails].sort(() => Math.random() - 0.5);
         setSortedCocktails(randomCocktails);
     }
@@ -218,7 +217,7 @@ const Cocktails = () => {
             {filterFavorites ? <CocktailFilterFavourite onClick={handleFilterFavourites}>Favourites</CocktailFilterFavourite> : <CocktailFilterFavouriteNot onClick={handleFilterFavourites}>Favourites</CocktailFilterFavouriteNot> }
             <CocktailSort onClick={() => {setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); rotateArrow()}}>
                 <p>Sort</p>
-                <ArrowDownward />
+                <ArrowDownwardIcon />
             </CocktailSort>
             <CocktailSort onClick={randomOrder}>
                 <p>Random</p>
@@ -232,7 +231,7 @@ const Cocktails = () => {
             <CocktailCardHeader>
             <h3><b>{cocktail.name}</b></h3>
             <div className="favourite" onClick={() => handleFavourite(cocktail)}>
-                {cocktail.favourite ? <Star /> : <StarBorder />}
+                {cocktail.favourite ? <StarIcon /> : <StarBorderIcon />}
             </div>
             </CocktailCardHeader>
                     <p><b>Ingredients:</b> {cocktail.ingredients.join(', ')}</p>
