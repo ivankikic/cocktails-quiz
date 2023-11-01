@@ -48,6 +48,7 @@ const NewQuiz = () => {
     }, []);
 
     const startGame = () => {
+        setCocktails(cocktails.sort(() => Math.random() - 0.5));
         setGameStarted(true)
         setCurrentQuestion(0)
         setResults([])
