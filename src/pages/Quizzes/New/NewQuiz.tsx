@@ -55,6 +55,10 @@ const NewQuiz = () => {
         setAnswers([])
     }
 
+    const capitalize = (str: string) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
 
     const endGame = () => {
         let correctCount = 0;
@@ -83,10 +87,11 @@ const NewQuiz = () => {
                 result.push(
                     <QuizAnswer key={index}>
                         <span>
-                            <span style={{color: answer[answerKey] === correctAnswer[answerKey] ? 'green' : 'red'}}>Your answer: </span>
+                            
+                            <span style={{color: answer[answerKey] === correctAnswer[answerKey] ? 'green' : 'red'}}>{capitalize(answerKey)}: </span>
                             {Array.isArray(answer[answerKey]) ? ((answer[answerKey] as unknown) as string[]).join(', ') : answer[answerKey]}
                         </span>
-                        <span>Correct answer: {Array.isArray(correctAnswer[answerKey]) ? ((correctAnswer[answerKey] as unknown) as string[]).join(', ') : correctAnswer[answerKey]}</span>
+                        <span>{capitalize(answerKey)}: {Array.isArray(correctAnswer[answerKey]) ? ((correctAnswer[answerKey] as unknown) as string[]).join(', ') : correctAnswer[answerKey]}</span>
                     </QuizAnswer>
                 );
             });
