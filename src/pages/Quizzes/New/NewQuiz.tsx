@@ -31,7 +31,6 @@ const NewQuiz = () => {
             querySnapshot.forEach((doc) => {
                 if(doc.data().favourite === true) {
                     cocktails.push({ id: doc.id, name: doc.data().name, ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish });
-                    correctAnswers.push({ ingredients: doc.data().ingredients, glass: doc.data().glass, method: doc.data().method, ice: doc.data().ice, garnish: doc.data().garnish });
                 }
             });
             setFavCocktails(cocktails);
@@ -39,7 +38,6 @@ const NewQuiz = () => {
             cocktails = cocktails.slice(0, 10);
     
             setCocktails(cocktails);
-            setCorrectAnswers(correctAnswers.slice(0, 10));
         });
         return unSubscribe;
             
@@ -48,7 +46,9 @@ const NewQuiz = () => {
     }, []);
 
     const startGame = () => {
-        setCocktails(cocktails.sort(() => Math.random() - 0.5));
+        const shuffledCocktails = cocktails.sort(() => Math.random() - 0.5);
+        setCocktails(shuffledCocktails);
+        setCorrectAnswers(shuffledCocktails.map((cocktail: cocktailType) => ({ ingredients: cocktail.ingredients, glass: cocktail.glass, method: cocktail.method, ice: cocktail.ice, garnish: cocktail.garnish })));
         setGameStarted(true)
         setCurrentQuestion(0)
         setResults([])
@@ -82,8 +82,8 @@ const NewQuiz = () => {
                 }
                 result.push(
                     <QuizAnswer key={index}>
-                        <span style={{color: answer[answerKey] === correctAnswer[answerKey] ? 'green' : 'red'}}>
-                            Your answer:
+                        <span>
+                            <span style={{color: answer[answerKey] === correctAnswer[answerKey] ? 'green' : 'red'}}>Your answer: </span>
                             {Array.isArray(answer[answerKey]) ? ((answer[answerKey] as unknown) as string[]).join(', ') : answer[answerKey]}
                         </span>
                         <span>Correct answer: {Array.isArray(correctAnswer[answerKey]) ? ((correctAnswer[answerKey] as unknown) as string[]).join(', ') : correctAnswer[answerKey]}</span>
@@ -142,11 +142,11 @@ const NewQuiz = () => {
                                         setAnswers([...answers, NewAnswer]);
                                         setCurrentQuestion(currentQuestion + 1);
                                     }}>
-                                    <input name="ingredients" placeholder="Ingredients" />
-                                    <input name="glass" placeholder="Glass" />
-                                    <input name="method" placeholder="Method" />
-                                    <input name="ice" placeholder="Ice" />
-                                    <input name="garnish" placeholder="Garnish" />
+                                    <input autoComplete="off" aria-autocomplete="none" name="ingredients" placeholder="Ingredients" />
+                                    <input autoComplete="off" aria-autocomplete="none" name="glass" placeholder="Glass" />
+                                    <input autoComplete="off" aria-autocomplete="none" name="method" placeholder="Method" />
+                                    <input autoComplete="off" aria-autocomplete="none" name="ice" placeholder="Ice" />
+                                    <input autoComplete="off" aria-autocomplete="none" name="garnish" placeholder="Garnish" />
                                     <Button variant="primary" type="submit">Next Question</Button>
                                 </form>
                             </QuizQuestion>
