@@ -1,12 +1,9 @@
-import { Container } from "./QuizzesStyles"
+import { Container } from "./QuizStyles"
 import { useState, useEffect } from "react"
 import db from '../../server/firebase'
 import { collection, query, onSnapshot } from "firebase/firestore";
 
-
-
-
-const Quizzes = () => { 
+const Quiz = () => {
     const [time, setTime] = useState(0)
     const [isRunning, setIsRunning] = useState(false);
     const [attempts, setAttempts] = useState()
@@ -46,8 +43,6 @@ const Quizzes = () => {
         setIsRunning(!isRunning);
         setTime(0);
       };
-
-
   return (
     <Container>
         <div className="header">
@@ -71,5 +66,4 @@ const Quizzes = () => {
   )
 }
 
-export default Quizzes
-
+export default Quiz
